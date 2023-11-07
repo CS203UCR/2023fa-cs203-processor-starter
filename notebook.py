@@ -470,7 +470,7 @@ def render_csv(file, columns = None, sort_by=None, average_by=None, skip=0):
         if df is None:
             df = d
         else:
-            df = df.append(d)
+            df = df._append(d)
             
     df = df[skip:]
     if sort_by:
