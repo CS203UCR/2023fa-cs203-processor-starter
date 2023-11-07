@@ -10,13 +10,16 @@ import copy
 import pandas
 from autograde import *
 import glob
+from IPython.core.display import HTML
 import delegate_function
 import cfiddle
 from cfiddle import *
 from hungwei import HungWeiExecutionMethod
-
 cfiddle.set_config("RunnerExecutionMethod_type", HungWeiExecutionMethod)
 
+#styles = open("./styles/custom.css", "r").read()
+styles = "div.prompt, code, output, prompt, kbd, pre, samp {font-family: 'SF Mono', 'Courier New', Courier, monospace, sans-serif !important;}"
+display(HTML('<style>' + styles + '</style>'))
 os.environ['PATH']=f"{os.environ['PATH']}:/usr/local/bin"
 
 pa_columns=["function", "seed", "size", "power","p1", "p2", "p3", "p4", "p5", "IC", "CPI", "CT", "ET", "L1_MPI", "TLB_MPI", "L1_cache_misses", "TLB_misses"]
@@ -255,6 +258,11 @@ def czoo_compare2(function, *argc, **kwargs):
 def show_png(file):
     return Image(file)
 
+def display_mono(df):
+    display(df.style.set_properties(**{'font-family': 'monospace'}))
+    
+    return
+
 
 def login(username):
     global user
@@ -480,7 +488,7 @@ def render_csv(file, columns = None, sort_by=None, average_by=None, skip=0):
         df[average_by] = df.index
     if columns:
         df = df[columns]
-    df.style.set_properties(**{'font-family': 'monospace'})
+    
     return df
 
 def _(csv, key, row, column, average_by=None):
@@ -594,7 +602,7 @@ def plotPE(file=None, what=None, df=None,  lines=False, columns=4, logx=None, lo
             axs.set_title(y)
 
             if logx:
-                axs.set_xscale("log")
+                axs.set_xscale("log", base=logx)
                 if not log_autoscale_x:
                     axs.set_xbound(d[x].min(), d[x].max()*1.3)
             else:
@@ -602,7 +610,7 @@ def plotPE(file=None, what=None, df=None,  lines=False, columns=4, logx=None, lo
                 axs.set_xbound(0, d[x].max()*1.3)
 
             if logy:
-                axs.set_yscale("log")
+                axs.set_yscale("log", base=logy)
                 if not log_autoscale_y:
                     axs.set_ybound(d[y].min(), d[y].max()*1.3)
             else:
@@ -681,21 +689,5 @@ def IC_avg_and_combine(*argc):
         all = all.append(r, ignore_index=True)
 
     return all
-
-        
-def call_graph(source, root=None, out=None, opt=None, quiet_on_success=True):
-    if not root:
-        root = "main"
-    if opt is None:
-        opt = ""
-    exe = source.replace('.cpp', '.exe')
-    if out is None:
-        out = f"{exe}.call_graph.png"
-
-    shell_cmd(f"g++ -pg {source} {opt} -I/opt/jupyterhub/lib/python3.8/site-packages/cfiddle/resources/include/ -L/opt/jupyterhub/lib/python3.8/site-packages/cfiddle/resources/libcfiddle/build/x86_64-linux-gnu/ -lcfiddle -o {exe}", shell=True, quiet_on_success=quiet_on_success)
-    shell_cmd(exe, shell=True, quiet_on_success=quiet_on_success)
-    shell_cmd(f"gprof {exe} | gprof2dot -n0 -e0 -z {root} | dot -Tpng -o {out}", shell=True, quiet_on_success=quiet_on_success)
-    
-    return Image(out)
 
 print("Done loading notebook! We're good to go!");
